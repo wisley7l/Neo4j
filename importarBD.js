@@ -12,6 +12,7 @@ SET c = row
 
 MATCH (e:Estados),(c:Cidades)
 WHERE e.uf = c.uf
-CREATE (c)-[:Pertence]->(e)
+CREATE (c)-[r:Pertence]->(e)
 
 */
+
