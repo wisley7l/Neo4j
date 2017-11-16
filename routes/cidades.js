@@ -76,7 +76,6 @@ function criarCidade(res, cidade){// função na qual será chamada para criar u
 
 }
 
-
 router.post('/', function (req, res, next) { // metodo post usado para criar uma nova cidade no BD, ou seja criar um node cidades
 	var cidade = { 						// variaviel cidade
 		uf : req.body.uf,				// propriedade uf do node cidades
@@ -93,10 +92,10 @@ router.post('/', function (req, res, next) { // metodo post usado para criar uma
 	db.cypher({
 				query: 'MATCH (c:Cidades { uf : {uf}, estado : {estado}, cidade : {cidade}}) RETURN c', // Query para consulta onde buscara os node Cidades 
 				params: {
-						// paramentro de busca.
-						uf : cidade.uf,
-						estado : cidade.estado,
-						cidade : cidade.cidade, 
+						// paramentro  das propriedade 
+						uf : cidade.uf,				// parametro uf recebe o valor de cidade.uf
+						estado : cidade.estado,		// parametro estado recebe o valor cidade.estado
+						cidade : cidade.cidade, 	// parametro cidade recebe o valor cidade.cidade
 					    },
 				}, function (err, results) {
 				    if (err) throw err;
@@ -116,17 +115,17 @@ router.post('/', function (req, res, next) { // metodo post usado para criar uma
 			tentar criar os relacionamentos, após a inserção de um novo node Cidades 
 	*/
 
-
-/*DELETE*/
+/* DELETE */
 
 router.delete('/:id', function(req, res, next) { // get para um cidade especifica pelo id  
   	var str = req.params.id 						// caputura o paramentro :id 
   	var parametro = str.replace(":",'');			// elimina da string o valor de : 
+
 	
   db.cypher({
 				query: 'MATCH (c:Cidades)  WHERE ID(c) ='+ parametro +' DELETE c', // Query para consulta onde buscara o node Cidades pelo ID
 				params: {
-				     // paramentro de busca. 	         
+				     // paramentro	         
 				},
 			}, function (err, results) {
 				    if (err) throw err;
@@ -142,7 +141,37 @@ router.delete('/:id', function(req, res, next) { // get para um cidade especific
 	});
 });
 
-
-
+/* PUT */
+router.put('/:id', function(req, res, next) { // get para um cidade especifica pelo id  
+  	var str = req.params.id 						// caputura o paramentro :id 
+  	var parametro = str.replace(":",'');			// elimina da string o valor de : 
+  	var cidade = { 						// variaviel cidade
+		uf : req.body.uf,				// propriedade uf do node cidades
+		estado : req.body.estado,		// propriedade estado do node cidades
+		cidade : req.body.cidade,		// propriedade cidade do node cidades
+	};
+		
+  	db.cypher({
+				query: 'MATCH (c:Cidades)  WHERE ID(c) ='+ parametro +' SET c.uf = {uf},c.estado = {estado},c.cidade ={cidade} RETURN c ', 
+				// Query para consulta onde buscara o node Cidades pelo ID e altera as propriedades
+				params: {
+				     // paramentro das propriedades 	         
+				    uf : cidade.uf,					//paramentro uf recebe o valor da variavel cidade.uf
+				    estado : cidade.estado,			//parametro estado recebe valor da variavel cidade.estado
+				    cidade : cidade.cidade,			//parametro cidade recebe o valor da variavel cidade.cidade
+				},
+			}, function (err, results) {
+				    if (err) throw err;
+				    var result = results[0]; 		// pega a primeira posição do vetor result para verificar se houve alguma resposta
+				    if (!result) {					// verifica se encontrou algum resultado 					        
+					        console.log("404"); 		//envia mensagem de erro 
+					        res.json("Ocorreu um erro");
+				    } else { 						// caso encontre algum resultado 
+					    	var user = results; 		// armazena todas as respostas na variavél user
+					    	res.json(user);
+					    	console.log("201");			//envia de ok
+					    }
+	});
+});
 
 module.exports = router;
